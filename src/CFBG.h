@@ -117,7 +117,9 @@ private:
     uint32 _MaxPlayersCountInGroup;
 
     void randomRanceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);
-    uint8 getRandomRace(uint8 races[]);
+
+    template <std::size_t N>
+    uint8 getRandomRace(const uint8 (&races)[N]);
     uint32 getMorphFromRace(uint8 race, uint8 gender);
 };
 
