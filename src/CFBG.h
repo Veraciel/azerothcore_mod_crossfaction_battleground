@@ -116,7 +116,7 @@ private:
     bool _IsEnableAvgIlvl;
     uint32 _MaxPlayersCountInGroup;
 
-    void randomRanceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);
+    void randomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);
 
     template <std::size_t N>
     uint8 getRandomRace(const uint8 (&races)[N]);
