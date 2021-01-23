@@ -23,6 +23,7 @@ void CFBG::LoadConfig()
 {
     _IsEnableSystem = sConfigMgr->GetBoolDefault("CFBG.Enable", false);
     _IsEnableAvgIlvl = sConfigMgr->GetBoolDefault("CFBG.Include.Avg.Ilvl.Enable", false);
+    _IsEnableBalancedTeams = sConfigMgr->GetBoolDefault("CFBG.BalancedTeams", false);
     _MaxPlayersCountInGroup = sConfigMgr->GetIntDefault("CFBG.Players.Count.In.Group", 3);
 }
 
@@ -36,6 +37,11 @@ bool CFBG::IsEnableAvgIlvl()
     return _IsEnableAvgIlvl;
 }
 
+bool CFBG::IsEnableBalancedTeams()
+{
+    return _IsEnableBalancedTeams;
+}
+
 uint32 CFBG::GetMaxPlayersCountInGroup()
 {
     return _MaxPlayersCountInGroup;
@@ -44,32 +50,50 @@ uint32 CFBG::GetMaxPlayersCountInGroup()
 uint32 CFBG::GetBGTeamAverageItemLevel(Battleground* bg, TeamId team)
 {
     if (!bg)
+    {
         return 0;
+    }
 
-    uint32 PlayersCount = bg->GetPlayersCountByTeam(team);
-    if (!PlayersCount)
-        return 0;
-
-    uint32 Sum = 0;
-    uint32 Count = 0;
+    uint32 sum = 0;
+    uint32 count = 0;
 
     for (auto itr : bg->GetPlayers())
     {
         Player* player = itr.second;
-        if (!player)
-            continue;
-
-        if (player->GetTeamId(true) != team)
-            continue;
-
-        Sum += player->GetAverageItemLevel();
-        Count++;
+        if (!!player && player->GetTeamId() == team)
+        {
+            sum += player->GetAverageItemLevel();
+            count++;
+        }
     }
 
-    if (!Count || !Sum)
+    if (!count || !sum)
+    {
         return 0;
+    }
 
-    return Sum / Count;
+    return sum / count;
+}
+
+uint32 CFBG::GetBGTeamSumPlayerLevel(Battleground* bg, TeamId team)
+{
+    if (!bg)
+    {
+        return 0;
+    }
+
+    uint32 sum = 0;
+
+    for (auto itr : bg->GetPlayers())
+    {
+        Player* player = itr.second;
+        if (!!player && player->GetTeamId() == team)
+        {
+            sum += player->getLevel();
+        }
+    }
+
+    return sum;
 }
 
 TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg)
@@ -81,6 +105,11 @@ TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg)
     if (Diff)
         return PlCountA < PlCountH ? TEAM_ALLIANCE : TEAM_HORDE;
 
+    if (IsEnableBalancedTeams())
+    {
+        return GetLowerSumPlayerLvlTeamInBg(bg);
+    }
+
     if (IsEnableAvgIlvl() && !IsAvgIlvlTeamsInBgEqual(bg))
         return GetLowerAvgIlvlTeamInBg(bg);
 
@@ -90,6 +119,20 @@ TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg)
         return TEAM_ALLIANCE;
 
     return TEAM_HORDE;
+}
+
+
+TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg)
+{
+    uint32 playerLevelAlliance = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_ALLIANCE);
+    uint32 playerLevelHorde = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_HORDE);
+
+    if (playerLevelAlliance == playerLevelHorde)
+    {
+        return GetLowerAvgIlvlTeamInBg(bg);
+    }
+
+    return (playerLevelAlliance < playerLevelHorde) ? TEAM_ALLIANCE : TEAM_HORDE;
 }
 
 TeamId CFBG::GetLowerAvgIlvlTeamInBg(Battleground* bg)
