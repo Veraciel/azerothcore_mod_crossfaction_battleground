@@ -30,7 +30,9 @@ public:
         uint32 PlayerCountInBG = sCFBG->GetAllPlayersCountInBG(bg);
 
         if (PlayerCountInBG)
-            teamid = sCFBG->GetLowerTeamIdInBG(bg);
+        {
+            teamid = sCFBG->GetLowerTeamIdInBG(bg, player);
+        }
 
         if (!group)
             sCFBG->ValidatePlayerForBG(bg, player, teamid);
