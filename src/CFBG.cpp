@@ -109,33 +109,32 @@ uint32 CFBG::GetBGTeamSumPlayerLevel(Battleground* bg, TeamId team)
     return sum;
 }
 
-TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg)
+TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg, Player* player)
 {
     int32 PlCountA = bg->GetPlayersCountByTeam(TEAM_ALLIANCE);
     int32 PlCountH = bg->GetPlayersCountByTeam(TEAM_HORDE);
     uint32 Diff = abs(PlCountA - PlCountH);
 
     if (Diff)
+    {
         return PlCountA < PlCountH ? TEAM_ALLIANCE : TEAM_HORDE;
+    }
 
     if (IsEnableBalancedTeams())
     {
-        return GetLowerSumPlayerLvlTeamInBg(bg);
+        return GetLowerSumPlayerLvlTeamInBg(bg, player);
     }
 
     if (IsEnableAvgIlvl() && !IsAvgIlvlTeamsInBgEqual(bg))
+    {
         return GetLowerAvgIlvlTeamInBg(bg);
+    }
 
-    uint8 rnd = urand(0, 1);
-
-    if (rnd)
-        return TEAM_ALLIANCE;
-
-    return TEAM_HORDE;
+    return urand(0, 1) ? TEAM_ALLIANCE : TEAM_HORDE;
 }
 
 
-TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg)
+TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg, Player *player)
 {
     uint32 playerLevelAlliance = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_ALLIANCE);
     uint32 playerLevelHorde = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_HORDE);
@@ -145,7 +144,24 @@ TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg)
         return GetLowerAvgIlvlTeamInBg(bg);
     }
 
-    return (playerLevelAlliance < playerLevelHorde) ? TEAM_ALLIANCE : TEAM_HORDE;
+    TeamId lowestTeam = (playerLevelAlliance < playerLevelHorde) ? TEAM_ALLIANCE : TEAM_HORDE;
+
+    if (IsEnableEvenTeams())
+    {
+        if (joiningPlayers % 2 == 0)
+        {
+            // if who is joining has the level (or avg item level) lower than the average players level of the joining-queue, so who actually can enter in the battle
+            // put him in the stronger team, so swap the lowestTeam
+            if (player->getLevel() <  averagePlayersLevelQueue || (player->getLevel() == averagePlayersLevelQueue && player->GetAverageItemLevel() < averagePlayersItemLevelQueue))
+            {
+                lowestTeam = lowestTeam == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+            }
+        }
+
+        joiningPlayers--;
+    }
+
+    return lowestTeam;
 }
 
 TeamId CFBG::GetLowerAvgIlvlTeamInBg(Battleground* bg)
@@ -655,6 +671,44 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
 
             return true;
         }
+
+        /* only for EvenTeams */
+        uint32 c = 0;
+        uint32 sumLevel = 0;
+        uint32 sumItemLevel = 0;
+        averagePlayersLevelQueue = 0;
+        averagePlayersItemLevelQueue = 0;
+
+        BattlegroundQueue::GroupsQueueType::const_iterator Ali_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
+        while (Ali_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree))
+        {
+            auto playerGuid = *((*Ali_itr)->Players.begin());
+            Player* player = ObjectAccessor::FindPlayer(playerGuid);
+            sumLevel += player->getLevel();
+            sumItemLevel += player->GetAverageItemLevel();
+            Ali_itr++;
+            c++;
+        }
+
+        BattlegroundQueue::GroupsQueueType::const_iterator Horde_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
+        while (Horde_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree))
+        {
+            auto playerGuid = *((*Horde_itr)->Players.begin());
+            Player* player = ObjectAccessor::FindPlayer(playerGuid);
+            sumLevel += player->getLevel();
+            sumItemLevel += player->GetAverageItemLevel();
+            Horde_itr++;
+            c++;
+        }
+
+        if (c > 0 && sumLevel > 0)
+        {
+            averagePlayersLevelQueue = sumLevel / c;
+            averagePlayersItemLevelQueue = sumItemLevel / c;
+            joiningPlayers = c;
+        }
+
+        return true;
     }
 
     // if CFBG.EvenTeams is disabled:

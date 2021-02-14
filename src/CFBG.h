@@ -75,14 +75,17 @@ public:
     bool IsEnableEvenTeams();
     uint32 EvenTeamsMaxPlayersThreshold();
     uint32 GetMaxPlayersCountInGroup();
+    uint32 averagePlayersLevelQueue;
+    uint32 averagePlayersItemLevelQueue;
+    uint32 joiningPlayers;
 
     uint32 GetBGTeamAverageItemLevel(Battleground* bg, TeamId team);
     uint32 GetBGTeamSumPlayerLevel(Battleground* bg, TeamId team);
     uint32 GetAllPlayersCountInBG(Battleground* bg);
 
-    TeamId GetLowerTeamIdInBG(Battleground* bg);
+    TeamId GetLowerTeamIdInBG(Battleground* bg, Player* player);
     TeamId GetLowerAvgIlvlTeamInBg(Battleground* bg);
-    TeamId GetLowerSumPlayerLvlTeamInBg(Battleground* bg);
+    TeamId GetLowerSumPlayerLvlTeamInBg(Battleground* bg, Player* player);
 
     bool IsAvgIlvlTeamsInBgEqual(Battleground* bg);
     bool SendRealNameQuery(Player* player);
