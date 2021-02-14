@@ -122,7 +122,7 @@ TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg, Player* player)
 
     if (IsEnableBalancedTeams())
     {
-        return GetLowerSumPlayerLvlTeamInBg(bg, player);
+        return SelectBgTeam(bg, player);
     }
 
     if (IsEnableAvgIlvl() && !IsAvgIlvlTeamsInBgEqual(bg))
@@ -134,7 +134,7 @@ TeamId CFBG::GetLowerTeamIdInBG(Battleground* bg, Player* player)
 }
 
 
-TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg, Player *player)
+TeamId CFBG::SelectBgTeam(Battleground* bg, Player *player)
 {
     uint32 playerLevelAlliance = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_ALLIANCE);
     uint32 playerLevelHorde = GetBGTeamSumPlayerLevel(bg, TeamId::TEAM_HORDE);
@@ -144,24 +144,24 @@ TeamId CFBG::GetLowerSumPlayerLvlTeamInBg(Battleground* bg, Player *player)
         return GetLowerAvgIlvlTeamInBg(bg);
     }
 
-    TeamId lowestTeam = (playerLevelAlliance < playerLevelHorde) ? TEAM_ALLIANCE : TEAM_HORDE;
+    TeamId team = (playerLevelAlliance < playerLevelHorde) ? TEAM_ALLIANCE : TEAM_HORDE;
 
     if (IsEnableEvenTeams())
     {
         if (joiningPlayers % 2 == 0)
         {
             // if who is joining has the level (or avg item level) lower than the average players level of the joining-queue, so who actually can enter in the battle
-            // put him in the stronger team, so swap the lowestTeam
+            // put him in the stronger team, so swap the team
             if (player->getLevel() <  averagePlayersLevelQueue || (player->getLevel() == averagePlayersLevelQueue && player->GetAverageItemLevel() < averagePlayersItemLevelQueue))
             {
-                lowestTeam = lowestTeam == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+                team = team == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
             }
         }
 
         joiningPlayers--;
     }
 
-    return lowestTeam;
+    return team;
 }
 
 TeamId CFBG::GetLowerAvgIlvlTeamInBg(Battleground* bg)
@@ -652,28 +652,30 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
         // if the sum of the players in BG and the players in queue is odd, add all in BG except one
         if ((bgPlayersSize + bgQueueSize) % 2 != 0) {
 
-            uint32 c = 0;
+            uint32 playerCount = 0;
 
+            // add to the alliance pool the players in queue except the last
             BattlegroundQueue::GroupsQueueType::const_iterator Ali_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
-            while (c < bgQueueSize-1 && Ali_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree))
+            while (playerCount < bgQueueSize-1 && Ali_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree))
             {
                 Ali_itr++;
-                c++;
+                playerCount++;
             }
 
-            c = 0;
+            // add to the horde pool the players in queue except the last
+            playerCount = 0;
             BattlegroundQueue::GroupsQueueType::const_iterator Horde_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
-            while (c < bgQueueSize-1 && Horde_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree))
+            while (playerCount < bgQueueSize-1 && Horde_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree))
             {
                 Horde_itr++;
-                c++;
+                playerCount++;
             }
 
             return true;
         }
 
         /* only for EvenTeams */
-        uint32 c = 0;
+        uint32 playerCount = 0;
         uint32 sumLevel = 0;
         uint32 sumItemLevel = 0;
         averagePlayersLevelQueue = 0;
@@ -687,7 +689,7 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             sumLevel += player->getLevel();
             sumItemLevel += player->GetAverageItemLevel();
             Ali_itr++;
-            c++;
+            playerCount++;
         }
 
         BattlegroundQueue::GroupsQueueType::const_iterator Horde_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
@@ -698,14 +700,14 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             sumLevel += player->getLevel();
             sumItemLevel += player->GetAverageItemLevel();
             Horde_itr++;
-            c++;
+            playerCount++;
         }
 
-        if (c > 0 && sumLevel > 0)
+        if (playerCount > 0 && sumLevel > 0)
         {
-            averagePlayersLevelQueue = sumLevel / c;
-            averagePlayersItemLevelQueue = sumItemLevel / c;
-            joiningPlayers = c;
+            averagePlayersLevelQueue = sumLevel / playerCount;
+            averagePlayersItemLevelQueue = sumItemLevel / playerCount;
+            joiningPlayers = playerCount;
         }
 
         return true;

@@ -85,7 +85,7 @@ public:
 
     TeamId GetLowerTeamIdInBG(Battleground* bg, Player* player);
     TeamId GetLowerAvgIlvlTeamInBg(Battleground* bg);
-    TeamId GetLowerSumPlayerLvlTeamInBg(Battleground* bg, Player* player);
+    TeamId SelectBgTeam(Battleground* bg, Player* player);
 
     bool IsAvgIlvlTeamsInBgEqual(Battleground* bg);
     bool SendRealNameQuery(Player* player);
