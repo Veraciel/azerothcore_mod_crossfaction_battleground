@@ -690,9 +690,11 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             if (*Ali_itr && !(*Ali_itr)->Players.empty())
             {
                 auto playerGuid = *((*Ali_itr)->Players.begin());
-                Player* player = ObjectAccessor::FindPlayer(playerGuid);
-                sumLevel += player->getLevel();
-                sumItemLevel += player->GetAverageItemLevel();
+                if (auto player = ObjectAccessor::FindPlayer(playerGuid))
+                {
+                    sumLevel += player->getLevel();
+                    sumItemLevel += player->GetAverageItemLevel();
+                }
             }
             Ali_itr++;
             playerCount++;
@@ -704,9 +706,11 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             if (*Horde_itr && !(*Horde_itr)->Players.empty())
             {
                 auto playerGuid = *((*Horde_itr)->Players.begin());
-                Player* player = ObjectAccessor::FindPlayer(playerGuid);
-                sumLevel += player->getLevel();
-                sumItemLevel += player->GetAverageItemLevel();
+                if (auto player = ObjectAccessor::FindPlayer(playerGuid))
+                {
+                    sumLevel += player->getLevel();
+                    sumItemLevel += player->GetAverageItemLevel();
+                }
             }
             Horde_itr++;
             playerCount++;
