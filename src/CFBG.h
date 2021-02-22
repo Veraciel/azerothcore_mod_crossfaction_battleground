@@ -18,6 +18,9 @@ enum FakeMorphs
     // FAKE_M_GOBLIN = 20582,
     // FAKE_F_GOBLIN = 20583,
 
+    // FAKE_M_UNDEAD missing
+    // FAKE_F_UNDEAD missing
+    
     FAKE_M_FEL_ORC        = 21267,
     FAKE_F_ORC            = 20316,
 
