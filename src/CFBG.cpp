@@ -362,7 +362,7 @@ void CFBG::randomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class
 
             switch (_class) {
                 case CLASS_DRUID:
-                    *race = RACE_NIGHTELF;
+                    *race = RACE_HUMAN; /* RACE_NIGHTELF; */
                     *morph = FAKE_M_NIGHT_ELF;
                     break;
                 case CLASS_SHAMAN:
