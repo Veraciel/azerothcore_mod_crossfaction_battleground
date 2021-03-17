@@ -354,13 +354,15 @@ void CFBG::randomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class
         /*
         * FEMALE morphs DWARF and NIGHT ELF are missing
         * therefore MALE and FEMALE are handled in a different way
+        *
+        * removed RACE NIGHT_ELF to prevent client crash
         */
         if (gender == GENDER_MALE) {
             *morph = FAKE_M_HUMAN;
 
             switch (_class) {
                 case CLASS_DRUID:
-                    *race = RACE_NIGHTELF;
+                    *race = RACE_HUMAN; /* RACE_NIGHTELF; */
                     *morph = FAKE_M_NIGHT_ELF;
                     break;
                 case CLASS_SHAMAN:
@@ -377,11 +379,11 @@ void CFBG::randomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class
                     *morph = getMorphFromRace(*race, gender);
                     break;
                 case CLASS_HUNTER:
-                    *race = getRandomRace({ RACE_DWARF, RACE_NIGHTELF, RACE_DRAENEI });
+                    *race = getRandomRace({ RACE_DWARF, /* RACE_NIGHTELF, */ RACE_DRAENEI });
                     *morph = getMorphFromRace(*race, gender);
                     break;
                 case CLASS_ROGUE:
-                    *race = getRandomRace({ RACE_HUMAN, RACE_DWARF, RACE_GNOME, RACE_NIGHTELF });
+                    *race = getRandomRace({ RACE_HUMAN, RACE_DWARF, RACE_GNOME/* , RACE_NIGHTELF */ });
                     *morph = getMorphFromRace(*race, gender);
                     break;
                 case CLASS_PRIEST:
