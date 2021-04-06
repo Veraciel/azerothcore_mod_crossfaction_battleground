@@ -20,7 +20,7 @@ enum FakeMorphs
 
     // FAKE_M_UNDEAD missing
     // FAKE_F_UNDEAD missing
-    
+
     FAKE_M_FEL_ORC        = 21267,
     FAKE_F_ORC            = 20316,
 
