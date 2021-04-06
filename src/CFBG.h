@@ -78,9 +78,6 @@ public:
     bool IsEnableEvenTeams();
     uint32 EvenTeamsMaxPlayersThreshold();
     uint32 GetMaxPlayersCountInGroup();
-    uint32 averagePlayersLevelQueue;
-    uint32 averagePlayersItemLevelQueue;
-    uint32 joiningPlayers;
 
     uint32 GetBGTeamAverageItemLevel(Battleground* bg, TeamId team);
     uint32 GetBGTeamSumPlayerLevel(Battleground* bg, TeamId team);
@@ -130,12 +127,14 @@ private:
     bool _IsEnableEvenTeams;
     uint32 _EvenTeamsMaxPlayersThreshold;
     uint32 _MaxPlayersCountInGroup;
+    uint32 averagePlayersLevelQueue;
+    uint32 averagePlayersItemLevelQueue;
+    uint32 joiningPlayers;
 
-    void randomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);
+    void RandomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);
 
-    template <std::size_t N>
-    uint8 getRandomRace(const uint8 (&races)[N]);
-    uint32 getMorphFromRace(uint8 race, uint8 gender);
+    uint8 GetRandomRace(std::initializer_list<uint32> races);
+    uint32 GetMorphFromRace(uint8 race, uint8 gender);
 };
 
 #define sCFBG CFBG::instance()
