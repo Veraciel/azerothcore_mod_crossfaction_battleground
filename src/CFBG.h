@@ -8,9 +8,9 @@
 #define _CFBG_H_
 
 #include "Common.h"
-#include "Player.h"
 #include "Battleground.h"
 #include "BattlegroundQueue.h"
+#include "Player.h"
 #include <unordered_map>
 
 enum FakeMorphs

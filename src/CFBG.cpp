@@ -5,15 +5,15 @@
  */
 
 #include "CFBG.h"
-#include "Containers.h"
-#include "Config.h"
-#include "Log.h"
-#include "ScriptMgr.h"
-#include "GroupMgr.h"
 #include "BattlegroundMgr.h"
-#include "Opcodes.h"
 #include "Chat.h"
+#include "Config.h"
+#include "Containers.h"
+#include "GroupMgr.h"
 #include "Language.h"
+#include "Log.h"
+#include "Opcodes.h"
+#include "ScriptMgr.h"
 
 CFBG* CFBG::instance()
 {
