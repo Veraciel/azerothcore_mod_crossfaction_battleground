@@ -17,5 +17,3 @@ void AddCFBGScripts()
 }
 
 #endif /* _CFBG_LOADER_H_ */
-
-

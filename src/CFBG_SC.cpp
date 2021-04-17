@@ -4,12 +4,12 @@
 */
 
 #include "CFBG.h"
-#include "ScriptMgr.h"
-#include "Log.h"
-#include "GroupMgr.h"
 #include "BattlegroundMgr.h"
-#include "Opcodes.h"
 #include "Chat.h"
+#include "GroupMgr.h"
+#include "Log.h"
+#include "Opcodes.h"
+#include "ScriptMgr.h"
 
 // CFBG custom script
 class CFBG_BG : public BGScript
@@ -123,7 +123,7 @@ public:
         Coef = 2;
     }
 
-    bool CanSendMessageQueue(BattlegroundQueue* queue, Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry) override
+    bool CanSendMessageBGQueue(BattlegroundQueue* queue, Player* leader, Battleground* bg, PvPDifficultyEntry const* bracketEntry) override
     {
         if (!bg->isArena() && sCFBG->IsEnableSystem() && sCFBG->SendMessageQueue(queue, bg, bracketEntry, leader))
             return false;
