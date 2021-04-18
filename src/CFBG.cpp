@@ -563,7 +563,7 @@ void CFBG::SetForgetInListPlayers(Player* player, bool value)
 
 bool CFBG::ShouldForgetInListPlayers(Player* player)
 {
-    return _forgetInListPlayersStore[player];
+    return _forgetInListPlayersStore.find(player) != _forgetInListPlayersStore.end() && _forgetInListPlayersStore[player];
 }
 
 void CFBG::DoForgetPlayersInBG(Player* player, Battleground* bg)
