@@ -594,7 +594,7 @@ bool CFBG::SendRealNameQuery(Player* player)
         return false;
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 1 + 1 + 1 + 1 + 10));
-    data.appendPackGUID(player->GetGUID());                     // player guid
+    data << player->GetGUID().WriteAsPacked();                  // player guid
     data << uint8(0);                                           // added in 3.1; if > 1, then end of packet
     data << player->GetName();                                  // played name
     data << uint8(0);                                           // realm name for cross realm BG usage
@@ -703,7 +703,7 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             if (*Ali_itr && !(*Ali_itr)->Players.empty())
             {
                 auto playerGuid = *((*Ali_itr)->Players.begin());
-                if (auto player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid))
+                if (auto player = ObjectAccessor::FindConnectedPlayer(playerGuid))
                 {
                     sumLevel += player->getLevel();
                     sumItemLevel += player->GetAverageItemLevel();
@@ -719,7 +719,7 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
             if (*Horde_itr && !(*Horde_itr)->Players.empty())
             {
                 auto playerGuid = *((*Horde_itr)->Players.begin());
-                if (auto player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid))
+                if (auto player = ObjectAccessor::FindConnectedPlayer(playerGuid))
                 {
                     sumLevel += player->getLevel();
                     sumItemLevel += player->GetAverageItemLevel();
@@ -775,7 +775,7 @@ void CFBG::UpdateForget(Player* player)
     }
 }
 
-std::unordered_map<uint64, uint32> BGSpam;
+std::unordered_map<ObjectGuid, uint32> BGSpam;
 bool CFBG::SendMessageQueue(BattlegroundQueue* bgqueue, Battleground* bg, PvPDifficultyEntry const* bracketEntry, Player* leader)
 {
     if (!IsEnableSystem())
