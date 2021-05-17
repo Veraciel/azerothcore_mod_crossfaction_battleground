@@ -76,6 +76,7 @@ public:
     bool IsEnableAvgIlvl();
     bool IsEnableBalancedTeams();
     bool IsEnableEvenTeams();
+    bool IsEnableResetCooldowns();
     uint32 EvenTeamsMaxPlayersThreshold();
     uint32 GetMaxPlayersCountInGroup();
 
@@ -125,6 +126,7 @@ private:
     bool _IsEnableAvgIlvl;
     bool _IsEnableBalancedTeams;
     bool _IsEnableEvenTeams;
+    bool _IsEnableResetCooldowns;
     uint32 _EvenTeamsMaxPlayersThreshold;
     uint32 _MaxPlayersCountInGroup;
     uint32 averagePlayersLevelQueue;

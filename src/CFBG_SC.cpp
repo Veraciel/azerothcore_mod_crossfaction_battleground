@@ -58,6 +58,9 @@ public:
             return;
 
         sCFBG->FitPlayerInTeam(player, true, bg);
+
+        if (sCFBG->IsEnableResetCooldowns())
+            player->RemoveArenaSpellCooldowns(true);
     }
 
     void OnBattlegroundEndReward(Battleground* bg, Player* player, TeamId /*winnerTeamId*/) override

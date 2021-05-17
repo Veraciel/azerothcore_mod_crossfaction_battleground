@@ -27,6 +27,7 @@ void CFBG::LoadConfig()
     _IsEnableAvgIlvl = sConfigMgr->GetOption<bool>("CFBG.Include.Avg.Ilvl.Enable", false);
     _IsEnableBalancedTeams = sConfigMgr->GetOption<bool>("CFBG.BalancedTeams", false);
     _IsEnableEvenTeams = sConfigMgr->GetOption<bool>("CFBG.EvenTeams.Enabled", false);
+    _IsEnableResetCooldowns = sConfigMgr->GetOption<bool>("CFBG.ResetCooldowns", false);
     _EvenTeamsMaxPlayersThreshold = sConfigMgr->GetOption<uint32>("CFBG.EvenTeams.MaxPlayersThreshold", 5);
     _MaxPlayersCountInGroup = sConfigMgr->GetOption<uint32>("CFBG.Players.Count.In.Group", 3);
 }
@@ -49,6 +50,11 @@ bool CFBG::IsEnableBalancedTeams()
 bool CFBG::IsEnableEvenTeams()
 {
     return _IsEnableEvenTeams;
+}
+
+bool CFBG::IsEnableResetCooldowns()
+{
+    return _IsEnableResetCooldowns;
 }
 
 uint32 CFBG::EvenTeamsMaxPlayersThreshold()
