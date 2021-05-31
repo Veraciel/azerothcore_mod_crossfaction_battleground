@@ -57,6 +57,7 @@ struct FakePlayer
     // Real
     uint8   RealRace;
     uint32  RealMorph;
+    uint32  RealNativeMorph;
     TeamId  RealTeamID;
 };
 

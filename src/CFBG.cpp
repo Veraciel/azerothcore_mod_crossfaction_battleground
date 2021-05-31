@@ -476,12 +476,13 @@ void CFBG::SetFakeRaceAndMorph(Player* player)
     RandomRaceMorph(&FakeRace, &FakeMorph, player->GetTeamId(true), player->getClass(), player->getGender());
 
     FakePlayer fakePlayer;
-    fakePlayer.FakeMorph    = FakeMorph;
-    fakePlayer.FakeRace     = FakeRace;
-    fakePlayer.FakeTeamID   = player->TeamIdForRace(FakeRace);
-    fakePlayer.RealMorph    = player->GetDisplayId();
-    fakePlayer.RealRace     = player->getRace(true);
-    fakePlayer.RealTeamID   = player->GetTeamId(true);
+    fakePlayer.FakeMorph        = FakeMorph;
+    fakePlayer.FakeRace         = FakeRace;
+    fakePlayer.FakeTeamID       = player->TeamIdForRace(FakeRace);
+    fakePlayer.RealMorph        = player->GetDisplayId();
+    fakePlayer.RealNativeMorph  = player->GetNativeDisplayId();
+    fakePlayer.RealRace         = player->getRace(true);
+    fakePlayer.RealTeamID       = player->GetTeamId(true);
 
     _fakePlayerStore[player] = fakePlayer;
 
@@ -506,7 +507,7 @@ void CFBG::ClearFakePlayer(Player* player)
 
     player->setRace(_fakePlayerStore[player].RealRace);
     player->SetDisplayId(_fakePlayerStore[player].RealMorph);
-    player->SetNativeDisplayId(_fakePlayerStore[player].RealMorph);
+    player->SetNativeDisplayId(_fakePlayerStore[player].RealNativeMorph);
     SetFactionForRace(player, _fakePlayerStore[player].RealRace);
 
     _fakePlayerStore.erase(player);
