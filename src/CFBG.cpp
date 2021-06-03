@@ -27,9 +27,12 @@ void CFBG::LoadConfig()
     _IsEnableAvgIlvl = sConfigMgr->GetOption<bool>("CFBG.Include.Avg.Ilvl.Enable", false);
     _IsEnableBalancedTeams = sConfigMgr->GetOption<bool>("CFBG.BalancedTeams", false);
     _IsEnableEvenTeams = sConfigMgr->GetOption<bool>("CFBG.EvenTeams.Enabled", false);
+    _IsEnableBalanceClassLowLevel = sConfigMgr->GetOption<bool>("CFBG.BalancedTeams.Class.LowLevel", true);
     _IsEnableResetCooldowns = sConfigMgr->GetOption<bool>("CFBG.ResetCooldowns", false);
     _EvenTeamsMaxPlayersThreshold = sConfigMgr->GetOption<uint32>("CFBG.EvenTeams.MaxPlayersThreshold", 5);
     _MaxPlayersCountInGroup = sConfigMgr->GetOption<uint32>("CFBG.Players.Count.In.Group", 3);
+    balanceClassMinLevel = sConfigMgr->GetOption<uint8>("CFBG.BalancedTeams.Class.MinLevel", 10);
+    balanceClassMaxLevel = sConfigMgr->GetOption<uint8>("CFBG.BalancedTeams.Class.MaxLevel", 19);
 }
 
 bool CFBG::IsEnableSystem()
@@ -45,6 +48,11 @@ bool CFBG::IsEnableAvgIlvl()
 bool CFBG::IsEnableBalancedTeams()
 {
     return _IsEnableBalancedTeams;
+}
+
+bool CFBG::IsEnableBalanceClassLowLevel()
+{
+    return _IsEnableBalanceClassLowLevel;
 }
 
 bool CFBG::IsEnableEvenTeams()
@@ -154,11 +162,36 @@ TeamId CFBG::SelectBgTeam(Battleground* bg, Player *player)
     {
         if (joiningPlayers % 2 == 0)
         {
-            // if who is joining has the level (or avg item level) lower than the average players level of the joining-queue, so who actually can enter in the battle
-            // put him in the stronger team, so swap the team
-            if (player && (player->getLevel() <  averagePlayersLevelQueue || (player->getLevel() == averagePlayersLevelQueue && player->GetAverageItemLevel() < averagePlayersItemLevelQueue)))
+            if (player)
             {
-                team = team == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+                bool balancedClass = false;
+
+                auto playerLevel = player->getLevel();
+
+                // if CFBG.BalancedTeams.LowLevelClass is enabled, check the quantity of hunter per team if the player is an hunter
+                if (IsEnableBalanceClassLowLevel() &&
+                    (playerLevel >= balanceClassMinLevel && playerLevel <= balanceClassMaxLevel) &&
+                    (playerLevel == bg->GetMaxLevel() || playerLevel == bg->GetMaxLevel()-1) &&
+                    player->getClass() == CLASS_HUNTER)
+                {
+                    team = getTeamWithLowerClass(bg, CLASS_HUNTER);
+                    balancedClass = true;
+                }
+
+                // if who is joining (who can enter in the battle):
+                // 1 - has the level lower than the average players level of the joining-queue
+                // - OR -
+                // 2 - has the average item level lower than the average players itme level
+                //
+                // put him in the stronger team, so swap the team
+                if (
+                    (playerLevel < averagePlayersLevelQueue || // 1
+                    (playerLevel == averagePlayersLevelQueue && player->GetAverageItemLevel() < averagePlayersItemLevelQueue)) // 2
+                    && !balancedClass // check if the team has been balanced already by the class balance logic
+                )
+                {
+                    team = team == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE; // swap the team
+                }
             }
         }
 
@@ -169,6 +202,28 @@ TeamId CFBG::SelectBgTeam(Battleground* bg, Player *player)
     }
 
     return team;
+}
+
+TeamId CFBG::getTeamWithLowerClass(Battleground *bg, Classes c) {
+    uint16 hordeClassQty = 0;
+    uint16 allianceClassQty = 0;
+
+    for (auto [playerGuid, player] : bg->GetPlayers())
+    {
+        if (player && player->getClass() == c)
+        {
+            if (player->GetTeamId() == TEAM_ALLIANCE)
+            {
+                allianceClassQty++;
+            }
+            else
+            {
+                hordeClassQty++;
+            }
+        }
+    }
+
+    return hordeClassQty > allianceClassQty ? TEAM_ALLIANCE : TEAM_HORDE;
 }
 
 TeamId CFBG::GetLowerAvgIlvlTeamInBg(Battleground* bg)
@@ -207,7 +262,7 @@ uint32 CFBG::GetAllPlayersCountInBG(Battleground* bg)
 
 uint8 CFBG::GetRandomRace(std::initializer_list<uint32> races)
 {
-    return acore::Containers::SelectRandomContainerElement(races);
+    return Acore::Containers::SelectRandomContainerElement(races);
 }
 
 uint32 CFBG::GetMorphFromRace(uint8 race, uint8 gender)
