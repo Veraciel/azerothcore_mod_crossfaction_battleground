@@ -207,7 +207,7 @@ uint32 CFBG::GetAllPlayersCountInBG(Battleground* bg)
 
 uint8 CFBG::GetRandomRace(std::initializer_list<uint32> races)
 {
-    return acore::Containers::SelectRandomContainerElement(races);
+    return Acore::Containers::SelectRandomContainerElement(races);
 }
 
 uint32 CFBG::GetMorphFromRace(uint8 race, uint8 gender)
