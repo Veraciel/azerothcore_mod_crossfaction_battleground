@@ -171,11 +171,18 @@ TeamId CFBG::SelectBgTeam(Battleground* bg, Player *player)
                 // if CFBG.BalancedTeams.LowLevelClass is enabled, check the quantity of hunter per team if the player is an hunter
                 if (IsEnableBalanceClassLowLevel() &&
                     (playerLevel >= balanceClassMinLevel && playerLevel <= balanceClassMaxLevel) &&
-                    (playerLevel == bg->GetMaxLevel() || playerLevel == bg->GetMaxLevel()-1) &&
-                    player->getClass() == CLASS_HUNTER)
+                    (playerLevel >= bg->GetMaxLevel() - 1) &&
+                    (player->getClass() == CLASS_HUNTER || isHunterJoining)) // if the current player is hunter OR there is a hunter in the joining queue while a non-hunter player is joining
                 {
                     team = getTeamWithLowerClass(bg, CLASS_HUNTER);
                     balancedClass = true;
+
+                    if (isHunterJoining && player->getClass() != CLASS_HUNTER)
+                    {
+                        team = team == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE; // swap the team
+                    }
+
+                    isHunterJoining = false;
                 }
 
                 // if who is joining (who can enter in the battle):
@@ -310,7 +317,7 @@ uint32 CFBG::GetMorphFromRace(uint8 race, uint8 gender)
             case RACE_TAUREN:
                 return FAKE_F_TAUREN;
             default:
-                return FAKE_F_BLOOD_ELF; // this should never happen, it to fix a warning about return value
+                return FAKE_F_BLOOD_ELF; // this should never happen, it's to fix a warning about return value
         }
     }
 }
@@ -758,38 +765,10 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
         uint32 sumItemLevel = 0;
         averagePlayersLevelQueue = 0;
         averagePlayersItemLevelQueue = 0;
+        isHunterJoining = false; // only for balanceClass
 
-        BattlegroundQueue::GroupsQueueType::const_iterator Ali_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
-        while (Ali_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree))
-        {
-            if (*Ali_itr && !(*Ali_itr)->Players.empty())
-            {
-                auto playerGuid = *((*Ali_itr)->Players.begin());
-                if (auto player = ObjectAccessor::FindConnectedPlayer(playerGuid))
-                {
-                    sumLevel += player->getLevel();
-                    sumItemLevel += player->GetAverageItemLevel();
-                }
-            }
-            Ali_itr++;
-            playerCount++;
-        }
-
-        BattlegroundQueue::GroupsQueueType::const_iterator Horde_itr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
-        while (Horde_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree))
-        {
-            if (*Horde_itr && !(*Horde_itr)->Players.empty())
-            {
-                auto playerGuid = *((*Horde_itr)->Players.begin());
-                if (auto player = ObjectAccessor::FindConnectedPlayer(playerGuid))
-                {
-                    sumLevel += player->getLevel();
-                    sumItemLevel += player->GetAverageItemLevel();
-                }
-            }
-            Horde_itr++;
-            playerCount++;
-        }
+        FillPlayersToCFBGonEvenTeams(bgqueue, bg, aliFree, bracket_id, playerCount, sumLevel, sumItemLevel);
+        FillPlayersToCFBGonEvenTeams(bgqueue, bg, hordeFree, bracket_id, playerCount, sumLevel, sumItemLevel);
 
         if (playerCount > 0 && sumLevel > 0)
         {
@@ -817,6 +796,34 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
     for (; Horde_itr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree); ++Horde_itr);
 
     return true;
+}
+
+void CFBG::FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground* bg, const int32 teamFree, BattlegroundBracketId bracket_id, uint32& playerCount, uint32& sumLevel, uint32& sumItemLevel) {
+
+    BattlegroundQueue::GroupsQueueType::const_iterator teamItr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
+    while (teamItr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*teamItr), teamFree))
+    {
+        if (*teamItr && !(*teamItr)->Players.empty())
+        {
+            auto playerGuid = *((*teamItr)->Players.begin());
+            if (auto player = ObjectAccessor::FindConnectedPlayer(playerGuid))
+            {
+                sumLevel += player->getLevel();
+                sumItemLevel += player->GetAverageItemLevel();
+
+                if (IsEnableBalanceClassLowLevel() && isClassJoining(CLASS_HUNTER, player,  bg->GetMaxLevel() - 1))
+                {
+                    isHunterJoining = true;
+                }
+            }
+        }
+        teamItr++;
+        playerCount++;
+    }
+}
+
+bool CFBG::isClassJoining(uint8 _class, Player* player, uint32 minLevel) {
+    return  player && player->getClass() == _class && (player->getLevel() >= minLevel);
 }
 
 void CFBG::UpdateForget(Player* player)
