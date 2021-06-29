@@ -141,7 +141,7 @@ private:
     uint32 joiningPlayers;
 
     bool isHunterJoining;
-    void FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground* bg, const int32 teamFree, BattlegroundBracketId bracket_id, uint32& playerCount, uint32& sumLevel, uint32& sumItemLevel);
+    void FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground* bg, const int32 teamFree, BattlegroundBracketId bracket_id, TeamId faction, uint32& playerCount, uint32& sumLevel, uint32& sumItemLevel);
     bool isClassJoining(uint8 _class, Player* player, uint32 minLevel);
 
     void RandomRaceMorph(uint8* race, uint32* morph, TeamId team, uint8 _class, uint8 gender);

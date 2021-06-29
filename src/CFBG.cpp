@@ -773,8 +773,8 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
         averagePlayersItemLevelQueue = 0;
         isHunterJoining = false; // only for balanceClass
 
-        FillPlayersToCFBGonEvenTeams(bgqueue, bg, aliFree, bracket_id, playerCount, sumLevel, sumItemLevel);
-        FillPlayersToCFBGonEvenTeams(bgqueue, bg, hordeFree, bracket_id, playerCount, sumLevel, sumItemLevel);
+        FillPlayersToCFBGonEvenTeams(bgqueue, bg, aliFree, bracket_id, TEAM_ALLIANCE, playerCount, sumLevel, sumItemLevel);
+        FillPlayersToCFBGonEvenTeams(bgqueue, bg, hordeFree, bracket_id, TEAM_HORDE, playerCount, sumLevel, sumItemLevel);
 
         if (playerCount > 0 && sumLevel > 0)
         {
@@ -804,10 +804,10 @@ bool CFBG::FillPlayersToCFBG(BattlegroundQueue* bgqueue, Battleground* bg, const
     return true;
 }
 
-void CFBG::FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground* bg, const int32 teamFree, BattlegroundBracketId bracket_id, uint32& playerCount, uint32& sumLevel, uint32& sumItemLevel) {
+void CFBG::FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground* bg, const int32 teamFree, BattlegroundBracketId bracket_id, TeamId faction, uint32& playerCount, uint32& sumLevel, uint32& sumItemLevel) {
 
     BattlegroundQueue::GroupsQueueType::const_iterator teamItr = bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].begin();
-    while (teamItr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[TEAM_ALLIANCE].AddGroup((*teamItr), teamFree))
+    while (teamItr != bgqueue->m_QueuedGroups[bracket_id][BG_QUEUE_CFBG].end() && bgqueue->m_SelectionPools[faction].AddGroup((*teamItr), teamFree))
     {
         if (*teamItr && !(*teamItr)->Players.empty())
         {
