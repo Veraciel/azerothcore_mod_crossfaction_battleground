@@ -7,7 +7,6 @@
 #include "BattlegroundMgr.h"
 #include "Chat.h"
 #include "GroupMgr.h"
-#include "Log.h"
 #include "Opcodes.h"
 #include "ScriptMgr.h"
 
@@ -19,11 +18,10 @@ public:
 
     void OnBattlegroundBeforeAddPlayer(Battleground* bg, Player* player) override
     {
-        if (!bg || bg->isArena() || !player)
+        if (!sCFBG->IsEnableSystem() || !bg || bg->isArena() || !player)
+        {
             return;
-
-        if (!sCFBG->IsEnableSystem())
-            return;
+        }
 
         TeamId teamid = player->GetTeamId(true);
         Group* group = player->GetOriginalGroup();
@@ -35,17 +33,23 @@ public:
         }
 
         if (!group)
+        {
             sCFBG->ValidatePlayerForBG(bg, player, teamid);
+        }
         else
         {
             for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 Player* member = itr->GetSource();
                 if (!member)
+                {
                     continue;
+                }
 
                 if (bg->IsPlayerInBattleground(member->GetGUID()))
+                {
                     continue;
+                }
 
                 sCFBG->ValidatePlayerForBG(bg, member, teamid);
             }
@@ -55,7 +59,9 @@ public:
     void OnBattlegroundAddPlayer(Battleground* bg, Player* player) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return;
+        }
 
         sCFBG->FitPlayerInTeam(player, true, bg);
 
@@ -67,43 +73,56 @@ public:
 
     void OnBattlegroundEndReward(Battleground* bg, Player* player, TeamId /*winnerTeamId*/) override
     {
-        if (!bg || !player || bg->isArena())
+        if (!sCFBG->IsEnableSystem() || !bg || !player || bg->isArena())
+        {
             return;
-
-        if (!sCFBG->IsEnableSystem())
-            return;
+        }
 
         if (sCFBG->IsPlayerFake(player))
+        {
             sCFBG->ClearFakePlayer(player);
+        }
     }
 
     void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return;
+        }
 
         sCFBG->FitPlayerInTeam(player, false, bg);
 
         if (sCFBG->IsPlayerFake(player))
+        {
             sCFBG->ClearFakePlayer(player);
+        }
     }
 
     void OnAddGroup(BattlegroundQueue* queue, GroupQueueInfo* ginfo, uint32& index, Player* /*leader*/, Group* /*grp*/, PvPDifficultyEntry const* /*bracketEntry*/, bool /*isPremade*/) override
     {
         if (!queue)
+        {
             return;
+        }
 
         if (sCFBG->IsEnableSystem() && !ginfo->ArenaType && !ginfo->IsRated)
+        {
             index = BG_QUEUE_CFBG;
+        }
     }
 
     bool CanFillPlayersToBG(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree, BattlegroundBracketId bracket_id) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return true;
+        }
 
         if (!bg->isArena() && sCFBG->FillPlayersToCFBG(queue, bg, aliFree, hordeFree, bracket_id))
+        {
             return false;
+        }
 
         return true;
     }
@@ -112,10 +131,14 @@ public:
         BattlegroundBracketId thisBracketId, BattlegroundQueue* specificQueue, BattlegroundBracketId specificBracketId) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return true;
+        }
 
         if (!bg->isArena() && sCFBG->FillPlayersToCFBGWithSpecific(queue, bg, aliFree, hordeFree, thisBracketId, specificQueue, specificBracketId))
+        {
             return false;
+        }
 
         return true;
     }
@@ -123,7 +146,9 @@ public:
     void OnCheckNormalMatch(BattlegroundQueue* /*queue*/, uint32& Coef, Battleground* /*bgTemplate*/, BattlegroundBracketId /*bracket_id*/, uint32& /*minPlayers*/, uint32& /*maxPlayers*/) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return;
+        }
 
         Coef = 2;
     }
@@ -150,10 +175,14 @@ public:
     void OnLogin(Player* player) override
     {
         if (!sCFBG->IsEnableSystem())
+        {
             return;
+        }
 
         if (player->GetTeamId(true) != player->GetBgTeamId())
-            sCFBG->FitPlayerInTeam(player, player->GetBattleground() && !player->GetBattleground()->isArena() ? true : false, player->GetBattleground());
+        {
+            sCFBG->FitPlayerInTeam(player, player->GetBattleground() && !player->GetBattleground()->isArena(), player->GetBattleground());
+        }
     }
 
     bool CanJoinInBattlegroundQueue(Player* player, ObjectGuid /*BattlemasterGuid*/ , BattlegroundTypeId /*BGTypeID*/, uint8 joinAsGroup, GroupJoinBattlegroundResult& err) override
