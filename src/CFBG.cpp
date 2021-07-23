@@ -828,13 +828,14 @@ void CFBG::FillPlayersToCFBGonEvenTeams(BattlegroundQueue* bgqueue, Battleground
     }
 }
 
-bool CFBG::isClassJoining(uint8 _class, Player* player, uint32 minLevel) {
+bool CFBG::isClassJoining(uint8 _class, Player* player, uint32 minLevel)
+{
     if (!player)
     {
         return false;
     }
 
-    return  player->getClass() == _class && (player->getLevel() >= minLevel);
+    return player->getClass() == _class && (player->getLevel() >= minLevel);
 }
 
 void CFBG::UpdateForget(Player* player)
