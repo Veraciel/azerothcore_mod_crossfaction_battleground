@@ -11,7 +11,7 @@
 void AddSC_CFBG();
 
 // Add all
-void AddCFBGScripts()
+void Addmod_cfbgScripts()
 {
     AddSC_CFBG();
 }
