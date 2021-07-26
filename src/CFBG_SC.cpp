@@ -58,7 +58,7 @@ public:
 
     void OnBattlegroundAddPlayer(Battleground* bg, Player* player) override
     {
-        if (!sCFBG->IsEnableSystem())
+        if (!sCFBG->IsEnableSystem() || bg->isArena())
         {
             return;
         }
@@ -86,7 +86,7 @@ public:
 
     void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player) override
     {
-        if (!sCFBG->IsEnableSystem())
+        if (!sCFBG->IsEnableSystem() || bg->isArena())
         {
             return;
         }
@@ -114,12 +114,12 @@ public:
 
     bool CanFillPlayersToBG(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree, BattlegroundBracketId bracket_id) override
     {
-        if (!sCFBG->IsEnableSystem())
+        if (!sCFBG->IsEnableSystem() || bg->isArena())
         {
             return true;
         }
 
-        if (!bg->isArena() && sCFBG->FillPlayersToCFBG(queue, bg, aliFree, hordeFree, bracket_id))
+        if (sCFBG->FillPlayersToCFBG(queue, bg, aliFree, hordeFree, bracket_id))
         {
             return false;
         }
@@ -130,12 +130,12 @@ public:
     bool CanFillPlayersToBGWithSpecific(BattlegroundQueue* queue, Battleground* bg, const int32 aliFree, const int32 hordeFree,
         BattlegroundBracketId thisBracketId, BattlegroundQueue* specificQueue, BattlegroundBracketId specificBracketId) override
     {
-        if (!sCFBG->IsEnableSystem())
+        if (!sCFBG->IsEnableSystem() || bg->isArena())
         {
             return true;
         }
 
-        if (!bg->isArena() && sCFBG->FillPlayersToCFBGWithSpecific(queue, bg, aliFree, hordeFree, thisBracketId, specificQueue, specificBracketId))
+        if (sCFBG->FillPlayersToCFBGWithSpecific(queue, bg, aliFree, hordeFree, thisBracketId, specificQueue, specificBracketId))
         {
             return false;
         }
@@ -143,9 +143,9 @@ public:
         return true;
     }
 
-    void OnCheckNormalMatch(BattlegroundQueue* /*queue*/, uint32& Coef, Battleground* /*bgTemplate*/, BattlegroundBracketId /*bracket_id*/, uint32& /*minPlayers*/, uint32& /*maxPlayers*/) override
+    void OnCheckNormalMatch(BattlegroundQueue* /*queue*/, uint32& Coef, Battleground* bg, BattlegroundBracketId /*bracket_id*/, uint32& /*minPlayers*/, uint32& /*maxPlayers*/) override
     {
-        if (!sCFBG->IsEnableSystem())
+        if (!sCFBG->IsEnableSystem() || bg->isArena())
         {
             return;
         }
