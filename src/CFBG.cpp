@@ -14,6 +14,7 @@
 #include "Log.h"
 #include "Opcodes.h"
 #include "ScriptMgr.h"
+#include "GameTime.h"
 
 CFBG* CFBG::instance()
 {
@@ -888,7 +889,7 @@ void CFBG::SendMessageQueue(BattlegroundQueue* bgQueue, Battleground* bg, PvPDif
                 BGSpamProtectionCFBG[leader->GetGUID()] = 0;
 
             // Skip if spam time < 30 secs (default)
-            if (sWorld->GetGameTime() - BGSpamProtectionCFBG[leader->GetGUID()] < sWorld->getIntConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_SPAM_DELAY))
+            if (GameTime::GetGameTime() - BGSpamProtectionCFBG[leader->GetGUID()] < sWorld->getIntConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_SPAM_DELAY))
             {
                 return;
             }
@@ -906,7 +907,7 @@ void CFBG::SendMessageQueue(BattlegroundQueue* bgQueue, Battleground* bg, PvPDif
                 }
             }
 
-            BGSpamProtectionCFBG[leader->GetGUID()] = sWorld->GetGameTime();
+            BGSpamProtectionCFBG[leader->GetGUID()] = GameTime::GetGameTime();
             sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level, qTotal, MinPlayers);
         }
     }
