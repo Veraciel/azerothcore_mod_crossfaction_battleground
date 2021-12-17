@@ -34,6 +34,7 @@ void CFBG::LoadConfig()
     _IsEnableEvenTeams = sConfigMgr->GetOption<bool>("CFBG.EvenTeams.Enabled", false);
     _IsEnableBalanceClassLowLevel = sConfigMgr->GetOption<bool>("CFBG.BalancedTeams.Class.LowLevel", true);
     _IsEnableResetCooldowns = sConfigMgr->GetOption<bool>("CFBG.ResetCooldowns", false);
+    _showPlayerName = sConfigMgr->GetOption<bool>("CFBG.Show.PlayerName", false);
     _EvenTeamsMaxPlayersThreshold = sConfigMgr->GetOption<uint32>("CFBG.EvenTeams.MaxPlayersThreshold", 5);
     _MaxPlayersCountInGroup = sConfigMgr->GetOption<uint32>("CFBG.Players.Count.In.Group", 3);
     _balanceClassMinLevel = sConfigMgr->GetOption<uint8>("CFBG.BalancedTeams.Class.MinLevel", 10);
@@ -932,7 +933,27 @@ void CFBG::SendMessageQueue(BattlegroundQueue* bgQueue, Battleground* bg, PvPDif
             }
 
             BGSpamProtectionCFBG[leader->GetGUID()] = sWorld->GetGameTime();
-            sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level, qTotal, MinPlayers);
+
+            if (_showPlayerName)
+            {
+                std::string Message = leader->GetPlayerName() + " |cffffffffHas Joined|r |cffff0000" + bg->GetName() + "|r " + "|cffffffff(|r|cff00ffff" + std::to_string(qTotal) + "|r|cffffffff/|r|cff00ffff" + std::to_string(MinPlayers) + "|r|cffffffff)|r";
+                SessionMap Sessions = sWorld->GetAllSessions();
+
+                for (auto & Session : Sessions)
+                {
+                    if (Player *plr = Session.second->GetPlayer())
+                    {
+                        WorldPacket data(SMSG_SERVER_MESSAGE, (Message.size() + 1));
+                        data << uint32(3);
+                        data << Message;
+                        plr->GetSession()->SendPacket(&data);
+                    }
+                }
+            }
+            else
+            {
+                sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level, qTotal, MinPlayers);
+            }
         }
     }
 }

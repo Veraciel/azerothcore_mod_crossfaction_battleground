@@ -69,3 +69,4 @@ CFBG.Players.Count.In.Group = 3
 CFBG.EvenTeams.Enabled = 0
 CFBG.EvenTeams.MaxPlayersThreshold = 5
 CFBG.ResetCooldowns = 0
+CFBG.Show.PlayerName = 0

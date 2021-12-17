@@ -125,6 +125,7 @@ private:
     bool _IsEnableBalanceClassLowLevel;
     bool _IsEnableEvenTeams;
     bool _IsEnableResetCooldowns;
+    bool _showPlayerName;
     uint32 _EvenTeamsMaxPlayersThreshold;
     uint32 _MaxPlayersCountInGroup;
     uint8 _balanceClassMinLevel;
