@@ -943,6 +943,11 @@ void CFBG::SendMessageQueue(BattlegroundQueue* bgQueue, Battleground* bg, PvPDif
                 {
                     if (Player *plr = Session.second->GetPlayer())
                     {
+                        if (plr->GetPlayerSetting(AzerothcorePSSource, SETTING_ANNOUNCER_FLAGS).HasFlag(ANNOUNCER_FLAG_DISABLE_BG_QUEUE))
+                        {
+                            continue;
+                        }
+
                         WorldPacket data(SMSG_SERVER_MESSAGE, (Message.size() + 1));
                         data << uint32(3);
                         data << Message;
@@ -952,7 +957,7 @@ void CFBG::SendMessageQueue(BattlegroundQueue* bgQueue, Battleground* bg, PvPDif
             }
             else
             {
-                sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level, qTotal, MinPlayers);
+                sWorld->SendWorldTextOptional(LANG_BG_QUEUE_ANNOUNCE_WORLD, ANNOUNCER_FLAG_DISABLE_BG_QUEUE, bgName, q_min_level, q_max_level, qTotal, MinPlayers);
             }
         }
     }
